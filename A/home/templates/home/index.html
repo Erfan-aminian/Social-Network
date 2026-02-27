@@ -1,10 +1,1090 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block content %}
-index page
-<div class="card">
-    {% for post in posts %}
-    <a href="{{ post.get_absolute_url }}" class="card-body">{{post.body | truncatewords:8 }}</a>
-    {% endfor %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+:root {
+    color-scheme: light;
+    --bg: #f6f5f1;
+    --surface: #ffffff;
+    --surface-2: rgba(255, 255, 255, 0.7);
+    --text: #0f172a;
+    --muted: #6b7280;
+    --primary: #0f766e;
+    --accent: #f59e0b;
+    --accent-2: #38bdf8;
+    --accent-3: #fb7185;
+    --border: rgba(15, 23, 42, 0.08);
+    --ring: rgba(15, 118, 110, 0.32);
+    --shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+    --radius: 18px;
+    --radius-lg: 28px;
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0b1110;
+    --surface: #111827;
+    --surface-2: rgba(17, 24, 39, 0.7);
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --primary: #14b8a6;
+    --accent: #fbbf24;
+    --accent-2: #22d3ee;
+    --accent-3: #f472b6;
+    --border: rgba(148, 163, 184, 0.18);
+    --ring: rgba(20, 184, 166, 0.45);
+    --shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+        color-scheme: dark;
+        --bg: #0b1110;
+        --surface: #111827;
+        --surface-2: rgba(17, 24, 39, 0.7);
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --primary: #14b8a6;
+        --accent: #fbbf24;
+        --accent-2: #22d3ee;
+        --accent-3: #f472b6;
+        --border: rgba(148, 163, 184, 0.18);
+        --ring: rgba(20, 184, 166, 0.45);
+        --shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+    }
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: "Vazirmatn", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    direction: rtl;
+}
+
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    inset: auto;
+    width: 42vw;
+    height: 42vw;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.55;
+    z-index: -3;
+}
+
+body::before {
+    top: -16vw;
+    right: -12vw;
+    background: radial-gradient(circle, var(--accent), transparent 65%);
+}
+
+body::after {
+    bottom: -22vw;
+    left: -12vw;
+    background: radial-gradient(circle, var(--primary), transparent 65%);
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.jumbotron {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+.bg-secondary {
+    background: transparent !important;
+}
+
+.navbar {
+    background: var(--surface-2) !important;
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 28px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.navbar .nav-link {
+    color: var(--muted) !important;
+    font-weight: 500;
+}
+
+.navbar .nav-link.active {
+    color: var(--text) !important;
+}
+
+.sn-shell {
+    width: min(1180px, 92vw);
+    margin: 0 auto;
+    padding: 40px 0 28px;
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 48px;
+    align-items: center;
+    padding: 26px 0 20px;
+    position: relative;
+}
+
+.hero-orbit {
+    position: absolute;
+    inset: -40px -60px -60px -40px;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.orbit-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px dashed rgba(148, 163, 184, 0.2);
+    animation: spin 18s linear infinite;
+}
+
+.orbit-ring.r1 {
+    width: 360px;
+    height: 360px;
+    top: -40px;
+    right: -30px;
+}
+
+.orbit-ring.r2 {
+    width: 520px;
+    height: 520px;
+    top: -120px;
+    right: -120px;
+    animation-duration: 28s;
+}
+
+.orbit-dot {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-2);
+    box-shadow: 0 0 0 6px rgba(56, 189, 248, 0.15);
+    animation: pulse 3s ease-in-out infinite;
+}
+
+.orbit-dot.d1 {
+    top: 40px;
+    right: 100px;
+}
+
+.orbit-dot.d2 {
+    top: 200px;
+    right: 20px;
+    background: var(--accent-3);
+}
+
+.orbit-dot.d3 {
+    top: 320px;
+    right: 180px;
+    background: var(--accent);
+}
+
+.hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.chip {
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    letter-spacing: 0.3px;
+}
+
+.hero-title {
+    font-size: clamp(2.4rem, 3.6vw, 4rem);
+    line-height: 1.1;
+    margin: 0 0 18px;
+}
+
+.hero-subtitle {
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: var(--muted);
+    margin: 0 0 26px;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.btn.primary {
+    background: linear-gradient(120deg, var(--primary), var(--accent));
+    color: #041016;
+    box-shadow: var(--shadow);
+}
+
+.btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
+}
+
+.btn.ghost {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 10px 16px;
+    color: var(--text);
+    font-weight: 600;
+}
+
+.theme-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-2);
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2);
+}
+
+.hero-metrics {
+    display: flex;
+    gap: 24px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+}
+
+.metric {
+    display: grid;
+    gap: 6px;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.metric-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.hero-visual {
+    position: relative;
+    min-height: 420px;
+}
+
+.hero-visual::before {
+    content: "";
+    position: absolute;
+    left: -12%;
+    top: 55%;
+    width: 220px;
+    height: 220px;
+    border-radius: 32px;
+    background: linear-gradient(140deg, rgba(56, 189, 248, 0.2), rgba(15, 118, 110, 0.05));
+    transform: rotate(-12deg);
+    z-index: -1;
+}
+
+.hero-left-stack {
+    position: absolute;
+    left: -10%;
+    top: 70px;
+    width: 220px;
+    display: grid;
+    gap: 12px;
+    z-index: 2;
+}
+
+.left-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+    display: grid;
+    gap: 10px;
+    animation: float 7s ease-in-out infinite;
+}
+
+.left-card:nth-child(2) {
+    animation-delay: -2s;
+}
+
+.left-card:nth-child(3) {
+    animation-delay: -4s;
+}
+
+.left-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.left-pill {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.12);
+    color: var(--primary);
+    border: 1px solid var(--border);
+}
+
+.left-list {
+    display: grid;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.left-bar {
+    height: 8px;
+    background: var(--surface-2);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.left-bar span {
+    display: block;
+    height: 100%;
+    width: var(--level, 60%);
+    background: linear-gradient(90deg, var(--primary), var(--accent-2));
+}
+
+.left-meta {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.left-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.left-chip {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.1);
+    color: var(--primary);
+    border: 1px solid var(--border);
+}
+
+.hero-rail {
+    position: absolute;
+    left: -6%;
+    top: 24px;
+    width: 46%;
+    display: grid;
+    gap: 14px;
+}
+
+.rail-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+    display: grid;
+    gap: 10px;
+}
+
+.rail-title {
+    font-weight: 600;
+}
+
+.rail-avatars {
+    display: flex;
+    gap: 10px;
+}
+
+.avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid var(--surface);
+    background: linear-gradient(140deg, var(--accent-2), var(--accent-3));
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+}
+
+.avatar.alt {
+    background: linear-gradient(140deg, var(--accent), var(--primary));
+}
+
+.rail-meta {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.glass-card {
+    position: absolute;
+    padding: 18px 20px;
+    border-radius: var(--radius-lg);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(20px);
+    display: grid;
+    gap: 10px;
+    overflow: hidden;
+}
+
+.glass-card::after {
+    content: "";
+    position: absolute;
+    inset: -50% 50% auto auto;
+    width: 80px;
+    height: 200px;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    opacity: 0.4;
+    transform: rotate(25deg);
+}
+
+.glass-card:nth-child(2) {
+    top: 20px;
+    right: 6%;
+    width: 70%;
+}
+
+.glass-card:nth-child(3) {
+    bottom: 18px;
+    left: 8%;
+    width: 58%;
+}
+
+.glass-card:nth-child(4) {
+    top: 52%;
+    right: 0;
+    width: 46%;
+}
+
+.glass-title {
+    font-weight: 600;
+}
+
+.glass-list {
+    display: grid;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.section {
+    margin-top: 60px;
+    display: grid;
+    gap: 24px;
+}
+
+.section-title {
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+.section-subtitle {
+    color: var(--muted);
+    margin: 8px 0 0;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    display: grid;
+    gap: 12px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-card::before {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--accent-3));
+}
+
+.feature-title {
+    font-weight: 600;
+    margin: 0;
+}
+
+.feature-text {
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.7;
+}
+
+.feed-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+}
+
+.feed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
+}
+
+.post-card {
+    background: linear-gradient(140deg, var(--surface), var(--surface-2));
+    border-radius: var(--radius);
+    padding: 18px;
+    border: 1px solid var(--border);
+    display: grid;
+    gap: 14px;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.post-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 50px rgba(15, 23, 42, 0.2);
+}
+
+.post-card::after {
+    content: "";
+    position: absolute;
+    top: -60px;
+    left: -40px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.25), transparent 70%);
+    opacity: 0.7;
+}
+
+.post-title {
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+.post-meta {
+    font-size: 0.85rem;
+    color: var(--muted);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.post-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.post-tag {
+    font-family: "Fira Code", monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.3px;
+    color: var(--primary);
+}
+
+.empty-state {
+    padding: 28px;
+    border-radius: var(--radius);
+    border: 1px dashed var(--border);
+    background: var(--surface);
+    text-align: center;
+}
+
+.social-strip {
+    margin-top: 70px;
+    border-top: 1px solid var(--border);
+    padding-top: 28px;
+}
+
+.social-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.social-link {
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 500;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.social-link:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.15);
+}
+
+.social-note {
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+[data-anim="reveal"] {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+[data-anim="reveal"].is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.9;
+    }
+    50% {
+        transform: scale(1.25);
+        opacity: 0.5;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.floaty {
+    animation: float 6s ease-in-out infinite;
+}
+
+@media (max-width: 980px) {
+    .hero {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-visual {
+        min-height: 320px;
+    }
+
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-left-stack {
+        position: static;
+        width: 100%;
+        order: 2;
+    }
+
+    .hero-rail {
+        position: static;
+        width: 100%;
+        margin-bottom: 12px;
+    }
+}
+
+@media (max-width: 640px) {
+    .hero-metrics {
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .hero-visual {
+        display: grid;
+        gap: 12px;
+    }
+
+    .hero-visual .glass-card {
+        position: static;
+        width: 100%;
+        margin-bottom: 12px;
+    }
+
+    .hero-orbit {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}
+</style>
+
+<div class="sn-shell" dir="rtl" lang="fa">
+    <section class="hero">
+        <div class="hero-orbit" aria-hidden="true">
+            <div class="orbit-ring r1"></div>
+            <div class="orbit-ring r2"></div>
+            <span class="orbit-dot d1"></span>
+            <span class="orbit-dot d2"></span>
+            <span class="orbit-dot d3"></span>
+        </div>
+        <div class="hero-left-stack" data-anim="reveal">
+            <div class="left-card">
+                <div class="left-title">
+                    <span>اتاق های پیشنهادی</span>
+                    <span class="left-pill">LIVE</span>
+                </div>
+                <div class="left-list">
+                    <div>طراحی محصول · ۱۸ نفر</div>
+                    <div>موسیقی · ۹ نفر</div>
+                    <div>استارتاپ · ۲۲ نفر</div>
+                </div>
+            </div>
+            <div class="left-card">
+                <div class="left-title">سطح فعالیت</div>
+                <div class="left-bar" style="--level: 72%;">
+                    <span></span>
+                </div>
+                <div class="left-meta">۷۲٪ کاربران آنلاین</div>
+            </div>
+            <div class="left-card">
+                <div class="left-title">دعوت سریع</div>
+                <div class="left-actions">
+                    <span class="left-chip">دعوت به چت</span>
+                    <span class="left-chip">ساخت گروه</span>
+                    <span class="left-chip">اشتراک لینک</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-copy" data-anim="reveal">
+            <div class="hero-badges">
+                <span class="chip">شبکه اجتماعی</span>
+                <span class="chip">چت و گفتگو</span>
+                <span class="chip">ساخت جامعه</span>
+            </div>
+            <h1 class="hero-title">جایی که پست می گذاری، چت می کنی و جامعه ات را می سازی.</h1>
+            <p class="hero-subtitle">
+                اینجا همه چیز حول ارتباط واقعی می چرخد. پست بگذار، چت کن، گروه بساز و از دل گفتگوها
+                شبکه ات را رشد بده. تجربه ای مینیمال، سریع و کاملا ریسپانسیو برای موبایل تا دسکتاپ.
+            </p>
+            <div class="hero-actions">
+                <a class="btn primary" href="{% url 'home:post_create' %}">ایجاد پست</a>
+                <a class="btn ghost" href="#feed">مشاهده فید</a>
+                <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">
+                    <span class="theme-dot"></span>
+                    <span data-theme-label>حالت روشن</span>
+                </button>
+            </div>
+            <div class="hero-metrics" data-anim="reveal">
+                <div class="metric">
+                    <span class="metric-value">{{ posts|length }}</span>
+                    <span class="metric-label">تعداد پست ها</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">گفتگو</span>
+                    <span class="metric-label">چت مستقیم</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value">گروه ها</span>
+                    <span class="metric-label">جامعه های کوچک</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+            <div class="hero-rail" data-anim="reveal">
+                <div class="rail-card">
+                    <div class="rail-title">آنلاین الان</div>
+                    <div class="rail-avatars">
+                        <span class="avatar"></span>
+                        <span class="avatar alt"></span>
+                        <span class="avatar"></span>
+                        <span class="avatar alt"></span>
+                    </div>
+                    <div class="rail-meta">۱۲ نفر در حال چت هستند</div>
+                </div>
+                <div class="rail-card">
+                    <div class="rail-title">اتاق های فعال</div>
+                    <div class="rail-meta">طراحی محصول، موسیقی، برنامه نویسی</div>
+                </div>
+                <div class="rail-card">
+                    <div class="rail-title">دعوت های جدید</div>
+                    <div class="rail-meta">۲ درخواست دوستی و ۱ دعوت گروهی</div>
+                </div>
+            </div>
+            <div class="glass-card floaty" data-anim="reveal">
+                <div class="glass-title">چت های فعال</div>
+                <div class="glass-list">
+                    <div>پیام تازه از @jamal</div>
+                    <div>۴ گفتگو در حال جریان</div>
+                    <div>دعوت به گروه طراحی محصول</div>
+                </div>
+            </div>
+            <div class="glass-card floaty" data-anim="reveal">
+                <div class="glass-title">پست های داغ</div>
+                <div class="glass-list">
+                    <div>#طراحی</div>
+                    <div>#فرانت_اند</div>
+                    <div>#استارتاپ</div>
+                </div>
+            </div>
+            <div class="glass-card floaty" data-anim="reveal">
+                <div class="glass-title">قدم بعدی</div>
+                <div class="glass-list">
+                    <div>پستت را منتشر کن</div>
+                    <div>یک دوست جدید اضافه کن</div>
+                    <div>چت گروهی را شروع کن</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" data-anim="reveal">
+        <div>
+            <h2 class="section-title">چرا این فضا بهتر است</h2>
+            <p class="section-subtitle">ترکیب پست، چت و جامعه در یک تجربه یکپارچه.</p>
+        </div>
+        <div class="feature-grid">
+            <div class="feature-card" data-anim="reveal">
+                <h3 class="feature-title">پروفایل و ارتباط</h3>
+                <p class="feature-text">هر کاربر یک پروفایل حرفه ای دارد و به سادگی می تواند ارتباط بسازد.</p>
+            </div>
+            <div class="feature-card" data-anim="reveal">
+                <h3 class="feature-title">چت سریع و امن</h3>
+                <p class="feature-text">مکالمه های خصوصی و گروهی با تمرکز روی سرعت و تجربه روان.</p>
+            </div>
+            <div class="feature-card" data-anim="reveal">
+                <h3 class="feature-title">فید الهام بخش</h3>
+                <p class="feature-text">پست های کوتاه، گفتگوهای مفید و لایک ها همه در یک فید تمیز.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="feed">
+        <div class="feed-head" data-anim="reveal">
+            <div>
+                <h2 class="section-title">آخرین پست ها</h2>
+                <p class="section-subtitle">جدیدترین نگاه ها از جامعه.</p>
+            </div>
+            <a class="btn ghost" href="{% url 'home:post_create' %}">شروع پست جدید</a>
+        </div>
+        <div class="feed-grid">
+            {% for post in posts %}
+            <article class="post-card" data-anim="reveal">
+                <span class="post-tag">#{{ post.slug }}</span>
+                <a href="{{ post.get_absolute_url }}" class="post-title">
+                    {{ post.body|truncatewords:14 }}
+                </a>
+                <div class="post-meta">
+                    <span>توسط {{ post.user.username }}</span>
+                    <span>•</span>
+                    <span>{{ post.created|date:"Y/m/d" }}</span>
+                </div>
+                <div class="post-stats">
+                    <span>{{ post.likes_count }} لایک</span>
+                    <span>•</span>
+                    <span>{{ post.pcomments.count }} کامنت</span>
+                </div>
+            </article>
+            {% empty %}
+            <div class="empty-state" data-anim="reveal">
+                <h3>هنوز پستی نیست</h3>
+                <p class="section-subtitle">اولین نفر باش و گفتگو را شروع کن.</p>
+                <a class="btn primary" href="{% url 'home:post_create' %}">اولین پست را بساز</a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="section social-strip" data-anim="reveal">
+        <div>
+            <h2 class="section-title">ما را دنبال کن</h2>
+            <p class="section-subtitle">آدرس شبکه های اجتماعی و کانال های رسمی.</p>
+        </div>
+        <div class="social-links">
+            <a class="social-link" href="https://instagram.com/yourpage" target="_blank" rel="noopener">اینستاگرام</a>
+            <a class="social-link" href="https://t.me/yourpage" target="_blank" rel="noopener">تلگرام</a>
+            <a class="social-link" href="https://twitter.com/yourpage" target="_blank" rel="noopener">توییتر</a>
+            <a class="social-link" href="https://www.linkedin.com/company/yourpage" target="_blank" rel="noopener">لینکدین</a>
+        </div>
+        <div class="social-note">می تونی این لینک ها را با آدرس واقعی شبکه های خودت جایگزین کنی.</div>
+    </section>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+(() => {
+    "use strict";
+
+    const root = document.documentElement;
+    const storageKey = "sn-theme";
+    const toggle = document.querySelector("[data-theme-toggle]");
+    const label = document.querySelector("[data-theme-label]");
+    const systemMedia = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const resolvedTheme = () => {
+        const explicit = root.getAttribute("data-theme");
+        if (explicit) {
+            return explicit;
+        }
+        return systemMedia.matches ? "dark" : "light";
+    };
+
+    const applyTheme = (theme) => {
+        if (theme === "light" || theme === "dark") {
+            root.setAttribute("data-theme", theme);
+        } else {
+            root.removeAttribute("data-theme");
+        }
+        const resolved = resolvedTheme();
+        if (label) {
+            label.textContent = resolved === "dark" ? "حالت تیره" : "حالت روشن";
+        }
+        if (toggle) {
+            toggle.setAttribute("aria-pressed", resolved === "dark");
+        }
+    };
+
+    const stored = localStorage.getItem(storageKey);
+    applyTheme(stored || "system");
+
+    if (toggle) {
+        toggle.addEventListener("click", () => {
+            const next = resolvedTheme() === "dark" ? "light" : "dark";
+            localStorage.setItem(storageKey, next);
+            applyTheme(next);
+        });
+    }
+
+    if (systemMedia.addEventListener) {
+        systemMedia.addEventListener("change", () => {
+            if (!localStorage.getItem(storageKey)) {
+                applyTheme("system");
+            }
+        });
+    }
+
+    const revealEls = document.querySelectorAll("[data-anim='reveal']");
+    if ("IntersectionObserver" in window) {
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("is-visible");
+                    io.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.18 });
+
+        revealEls.forEach((el, index) => {
+            el.style.transitionDelay = `${Math.min(index * 0.08, 0.4)}s`;
+            io.observe(el);
+        });
+    } else {
+        revealEls.forEach((el) => el.classList.add("is-visible"));
+    }
+
+    window.addEventListener("load", () => {
+        if (window.gsap) {
+            gsap.from(".hero-copy > *", {
+                opacity: 0,
+                y: 24,
+                duration: 0.8,
+                stagger: 0.08,
+                ease: "power2.out"
+            });
+            gsap.from(".glass-card", {
+                opacity: 0,
+                y: 18,
+                duration: 0.9,
+                stagger: 0.12,
+                ease: "power2.out"
+            });
+            gsap.from(".hero-left-stack .left-card", {
+                opacity: 0,
+                x: -18,
+                duration: 0.8,
+                stagger: 0.1,
+                ease: "power2.out"
+            });
+            gsap.from(".hero-rail", {
+                opacity: 0,
+                x: -20,
+                duration: 0.9,
+                ease: "power2.out"
+            });
+            gsap.from(".orbit-ring", {
+                opacity: 0,
+                scale: 0.9,
+                duration: 1.2,
+                ease: "power2.out"
+            });
+        }
+    });
+})();
+</script>
 
 {% endblock %}

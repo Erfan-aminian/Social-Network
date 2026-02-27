@@ -1,49 +1,710 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block content %}
-  {% if request.user.id == post.user.id %}
-    <a href="{% url 'home:post_delete' post.id %}" class="btn btn-danger">Delete</a>
-    <a href="{% url 'home:post_update' post.id %}" class="btn btn-info">Update</a>
-  {% endif %}
-  <p><a href="{% url 'account:user_profile' post.user.id %}" >{{ post.user.username }}</a> - {{ post.updated |date:"Y-M"}}</p>
-  <p>{{ post.body }}</p><hr/>
-{% if request.user.is_authenticated %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
 
-  <a href="{% url 'home:post_like' post.id %}" class="{% if can_like %}disabled{% endif %} btn btn-primary col-md-2">Like {{ post.likes_count }}</a>
+:root {
+    color-scheme: light;
+    --bg: #f6f5f1;
+    --surface: #ffffff;
+    --surface-2: rgba(255, 255, 255, 0.7);
+    --text: #0f172a;
+    --muted: #6b7280;
+    --primary: #0f766e;
+    --accent: #f59e0b;
+    --accent-2: #38bdf8;
+    --accent-3: #fb7185;
+    --border: rgba(15, 23, 42, 0.08);
+    --ring: rgba(15, 118, 110, 0.32);
+    --shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+    --radius: 18px;
+    --radius-lg: 28px;
+}
 
-  <form action="" method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Send">
-  </form><br/>
-{% else %}
-  <p class="alert alert-danger">Only logged user can comment.</p>
-{% endif %}
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0b1110;
+    --surface: #111827;
+    --surface-2: rgba(17, 24, 39, 0.7);
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --primary: #14b8a6;
+    --accent: #fbbf24;
+    --accent-2: #22d3ee;
+    --accent-3: #f472b6;
+    --border: rgba(148, 163, 184, 0.18);
+    --ring: rgba(20, 184, 166, 0.45);
+    --shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+}
 
-{% for comment in comments %}
-  <div class="card bg-dark text-white">
-    <p class="card-header">{{ comment.user }} | {{ comment.created|timesince }}</p>
-    <p class="card-body">{{ comment.body }}</p>
-    {% if request.user.is_authenticated %}
-      <form action="{% url 'home:add_reply' post.id comment.id %}" method="post">
-        {% csrf_token %}
-        {{ reply_form.as_p }}
-        <input type="submit" value="send">
-      </form>
-    {% endif %}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+        color-scheme: dark;
+        --bg: #0b1110;
+        --surface: #111827;
+        --surface-2: rgba(17, 24, 39, 0.7);
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --primary: #14b8a6;
+        --accent: #fbbf24;
+        --accent-2: #22d3ee;
+        --accent-3: #f472b6;
+        --border: rgba(148, 163, 184, 0.18);
+        --ring: rgba(20, 184, 166, 0.45);
+        --shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+    }
+}
 
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
 
-    {% with replies=comment.rcomments.all %}
-      {% for reply in replies %}
-        <p class="bg-primary p-3 m-2">{{ reply.body }}</p>
-      {% endfor %}
-    {% endwith %}
-  </div><br/>
+html {
+    scroll-behavior: smooth;
+}
 
+body {
+    margin: 0;
+    font-family: "Vazirmatn", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    direction: rtl;
+}
 
-{% empty %}
-  <p>No comment yet! </p>
-{% endfor %}
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    inset: auto;
+    width: 42vw;
+    height: 42vw;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.55;
+    z-index: -3;
+}
 
+body::before {
+    top: -16vw;
+    right: -12vw;
+    background: radial-gradient(circle, var(--accent), transparent 65%);
+}
 
+body::after {
+    bottom: -22vw;
+    left: -12vw;
+    background: radial-gradient(circle, var(--primary), transparent 65%);
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.jumbotron {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+.bg-secondary {
+    background: transparent !important;
+}
+
+.navbar {
+    background: var(--surface-2) !important;
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 28px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.navbar .nav-link {
+    color: var(--muted) !important;
+    font-weight: 500;
+}
+
+.navbar .nav-link.active {
+    color: var(--text) !important;
+}
+
+.sn-shell {
+    width: min(1180px, 92vw);
+    margin: 0 auto;
+    padding: 36px 0 32px;
+}
+
+.detail-hero {
+    display: grid;
+    gap: 24px;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.btn.primary {
+    background: linear-gradient(120deg, var(--primary), var(--accent));
+    color: #041016;
+    box-shadow: var(--shadow);
+}
+
+.btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
+}
+
+.btn.ghost {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.btn.danger {
+    background: linear-gradient(120deg, #ff6b6b, #ff9a62);
+    color: #0b0d12;
+}
+
+.btn.disabled,
+.btn[aria-disabled="true"] {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 10px 16px;
+    color: var(--text);
+    font-weight: 600;
+}
+
+.theme-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-2);
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2);
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 320px);
+    gap: 28px;
+    align-items: start;
+}
+
+.post-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 26px;
+    box-shadow: var(--shadow);
+    display: grid;
+    gap: 16px;
+}
+
+.post-title {
+    font-size: clamp(1.6rem, 2.4vw, 2.4rem);
+    margin: 0;
+}
+
+.post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.post-meta a {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.post-body {
+    line-height: 1.9;
+    font-size: 1.05rem;
+    color: var(--text);
+    white-space: pre-line;
+}
+
+.post-stats {
+    display: flex;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.comment-section {
+    margin-top: 26px;
+    display: grid;
+    gap: 16px;
+}
+
+.section-title {
+    font-size: 1.4rem;
+    margin: 0;
+}
+
+.section-subtitle {
+    color: var(--muted);
+    margin: 6px 0 0;
+}
+
+.form-shell {
+    display: grid;
+    gap: 12px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 16px;
+    box-shadow: var(--shadow);
+}
+
+.form-shell label {
+    font-weight: 600;
+}
+
+.form-shell textarea,
+.form-shell input[type="text"] {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    font-family: inherit;
+}
+
+.form-shell textarea:focus,
+.form-shell input[type="text"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--ring);
+    border-color: transparent;
+}
+
+.alert-box {
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    background: rgba(255, 149, 62, 0.12);
+    border: 1px solid rgba(255, 149, 62, 0.3);
+    color: var(--text);
+}
+
+.comment-list {
+    display: grid;
+    gap: 16px;
+}
+
+.comment-card {
+    background: linear-gradient(140deg, var(--surface), var(--surface-2));
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+    box-shadow: var(--shadow);
+}
+
+.comment-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.comment-head strong {
+    color: var(--text);
+}
+
+.reply-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.reply-card {
+    background: var(--surface);
+    border-right: 3px solid var(--primary);
+    padding: 10px 12px;
+    border-radius: 12px;
+    display: grid;
+    gap: 4px;
+}
+
+.detail-aside {
+    display: grid;
+    gap: 16px;
+}
+
+.aside-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    display: grid;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.aside-card::before {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent-3));
+}
+
+.aside-title {
+    font-weight: 600;
+}
+
+.aside-meta {
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+.aside-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tag {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.1);
+    color: var(--primary);
+    border: 1px solid var(--border);
+}
+
+.social-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.social-link {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 500;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.social-link:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.15);
+}
+
+[data-anim="reveal"] {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+[data-anim="reveal"].is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (max-width: 1024px) {
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .post-card {
+        padding: 20px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}
+</style>
+
+<div class="sn-shell" dir="rtl" lang="fa">
+    <section class="detail-hero">
+        <div class="hero-actions" data-anim="reveal">
+            <a class="btn ghost" href="{% url 'home:home' %}">بازگشت به فید</a>
+            {% if request.user.id == post.user.id %}
+                <a href="{% url 'home:post_update' post.id %}" class="btn ghost">ویرایش</a>
+                <a href="{% url 'home:post_delete' post.id %}" class="btn danger">حذف</a>
+            {% endif %}
+            <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">
+                <span class="theme-dot"></span>
+                <span data-theme-label>حالت روشن</span>
+            </button>
+        </div>
+
+        <div class="detail-grid">
+            <main class="detail-main">
+                <article class="post-card" data-anim="reveal">
+                    <h1 class="post-title">جزئیات پست</h1>
+                    <div class="post-meta">
+                        <a href="{% url 'account:user_profile' post.user.id %}">@{{ post.user.username }}</a>
+                        <span>•</span>
+                        <span>آخرین بروزرسانی {{ post.updated|date:"Y/m/d" }}</span>
+                    </div>
+                    <div class="post-body">{{ post.body }}</div>
+                    <div class="post-stats">
+                        <span>{{ post.likes_count }} لایک</span>
+                        <span>•</span>
+                        <span>{{ post.pcomments.count }} کامنت</span>
+                    </div>
+                    {% if request.user.is_authenticated %}
+                        <div class="hero-actions">
+                            <a href="{% url 'home:post_like' post.id %}"
+                               class="btn primary {% if can_like %}disabled{% endif %}"
+                               aria-disabled="{% if can_like %}true{% else %}false{% endif %}">
+                                پسندیدن {{ post.likes_count }}
+                            </a>
+                        </div>
+                    {% endif %}
+                </article>
+
+                <section class="comment-section">
+                    <div data-anim="reveal">
+                        <h2 class="section-title">نظرات</h2>
+                        <p class="section-subtitle">گفتگو را ادامه بده.</p>
+                    </div>
+
+                    {% if request.user.is_authenticated %}
+                        <form class="form-shell comment-form" action="" method="post" data-anim="reveal">
+                            {% csrf_token %}
+                            <label for="{{ form.body.id_for_label }}">نظر شما</label>
+                            {{ form.body }}
+                            <button class="btn primary" type="submit">ارسال نظر</button>
+                        </form>
+                    {% else %}
+                        <div class="alert-box" data-anim="reveal">فقط کاربران وارد شده می توانند نظر بدهند.</div>
+                    {% endif %}
+
+                    <div class="comment-list">
+                        {% for comment in comments %}
+                        <article class="comment-card" data-anim="reveal">
+                            <div class="comment-head">
+                                <strong>{{ comment.user }}</strong>
+                                <span>•</span>
+                                <span>{{ comment.created|date:"Y/m/d H:i" }}</span>
+                            </div>
+                            <div>{{ comment.body }}</div>
+
+                            {% if request.user.is_authenticated %}
+                                <form class="form-shell reply-form" action="{% url 'home:add_reply' post.id comment.id %}" method="post">
+                                    {% csrf_token %}
+                                    <label for="{{ reply_form.body.id_for_label }}">پاسخ شما</label>
+                                    {{ reply_form.body }}
+                                    <button class="btn ghost" type="submit">ارسال پاسخ</button>
+                                </form>
+                            {% endif %}
+
+                            {% with replies=comment.rcomments.all %}
+                                {% if replies %}
+                                    <div class="reply-list">
+                                        {% for reply in replies %}
+                                            <div class="reply-card">
+                                                <strong>{{ reply.user }}</strong>
+                                                <span>{{ reply.created|date:"Y/m/d H:i" }}</span>
+                                                <div>{{ reply.body }}</div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% endwith %}
+                        </article>
+                        {% empty %}
+                        <div class="alert-box" data-anim="reveal">هنوز نظری ثبت نشده.</div>
+                        {% endfor %}
+                    </div>
+                </section>
+            </main>
+
+            <aside class="detail-aside">
+                <div class="aside-card" data-anim="reveal">
+                    <div class="aside-title">خلاصه نویسنده</div>
+                    <div class="aside-meta">@{{ post.user.username }} · {{ post.created|date:"Y/m/d" }}</div>
+                    <div class="aside-meta">آخرین فعالیت: {{ post.updated|date:"Y/m/d" }}</div>
+                </div>
+                <div class="aside-card" data-anim="reveal">
+                    <div class="aside-title">وضعیت گفتگو</div>
+                    <div class="aside-meta">{{ post.pcomments.count }} نظر ثبت شده</div>
+                    <div class="aside-tags">
+                        <span class="tag">چت فعال</span>
+                        <span class="tag">پست محبوب</span>
+                        <span class="tag">جامعه</span>
+                    </div>
+                </div>
+                <div class="aside-card" data-anim="reveal">
+                    <div class="aside-title">اقدام سریع</div>
+                    <div class="aside-meta">پست را ذخیره کن یا لینک را به دوستت بفرست.</div>
+                    <div class="aside-tags">
+                        <span class="tag">ذخیره</span>
+                        <span class="tag">اشتراک</span>
+                        <span class="tag">دعوت به چت</span>
+                    </div>
+                </div>
+                <div class="aside-card" data-anim="reveal">
+                    <div class="aside-title">ما را دنبال کن</div>
+                    <div class="aside-meta">آدرس شبکه های اجتماعی رسمی.</div>
+                    <div class="social-links">
+                        <a class="social-link" href="https://instagram.com/yourpage" target="_blank" rel="noopener">اینستاگرام</a>
+                        <a class="social-link" href="https://t.me/yourpage" target="_blank" rel="noopener">تلگرام</a>
+                        <a class="social-link" href="https://twitter.com/yourpage" target="_blank" rel="noopener">توییتر</a>
+                        <a class="social-link" href="https://www.linkedin.com/company/yourpage" target="_blank" rel="noopener">لینکدین</a>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+(() => {
+    "use strict";
+
+    const root = document.documentElement;
+    const storageKey = "sn-theme";
+    const toggle = document.querySelector("[data-theme-toggle]");
+    const label = document.querySelector("[data-theme-label]");
+    const systemMedia = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const resolvedTheme = () => {
+        const explicit = root.getAttribute("data-theme");
+        if (explicit) {
+            return explicit;
+        }
+        return systemMedia.matches ? "dark" : "light";
+    };
+
+    const applyTheme = (theme) => {
+        if (theme === "light" || theme === "dark") {
+            root.setAttribute("data-theme", theme);
+        } else {
+            root.removeAttribute("data-theme");
+        }
+        const resolved = resolvedTheme();
+        if (label) {
+            label.textContent = resolved === "dark" ? "حالت تیره" : "حالت روشن";
+        }
+        if (toggle) {
+            toggle.setAttribute("aria-pressed", resolved === "dark");
+        }
+    };
+
+    const stored = localStorage.getItem(storageKey);
+    applyTheme(stored || "system");
+
+    if (toggle) {
+        toggle.addEventListener("click", () => {
+            const next = resolvedTheme() === "dark" ? "light" : "dark";
+            localStorage.setItem(storageKey, next);
+            applyTheme(next);
+        });
+    }
+
+    if (systemMedia.addEventListener) {
+        systemMedia.addEventListener("change", () => {
+            if (!localStorage.getItem(storageKey)) {
+                applyTheme("system");
+            }
+        });
+    }
+
+    const revealEls = document.querySelectorAll("[data-anim='reveal']");
+    if ("IntersectionObserver" in window) {
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("is-visible");
+                    io.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.2 });
+
+        revealEls.forEach((el, index) => {
+            el.style.transitionDelay = `${Math.min(index * 0.08, 0.4)}s`;
+            io.observe(el);
+        });
+    } else {
+        revealEls.forEach((el) => el.classList.add("is-visible"));
+    }
+
+    if (window.gsap) {
+        gsap.from(".post-card", {
+            opacity: 0,
+            y: 20,
+            duration: 0.8,
+            ease: "power2.out"
+        });
+        gsap.from(".aside-card", {
+            opacity: 0,
+            x: -18,
+            duration: 0.9,
+            stagger: 0.1,
+            ease: "power2.out"
+        });
+    }
+
+    const commentTextareas = document.querySelectorAll(".comment-form textarea");
+    commentTextareas.forEach((el) => {
+        if (!el.placeholder) {
+            el.placeholder = "نظر شما را اینجا بنویسید...";
+        }
+        el.setAttribute("aria-label", "متن نظر");
+    });
+
+    const replyTextareas = document.querySelectorAll(".reply-form textarea");
+    replyTextareas.forEach((el) => {
+        if (!el.placeholder) {
+            el.placeholder = "پاسخ شما...";
+        }
+        el.setAttribute("aria-label", "متن پاسخ");
+    });
+})();
+</script>
 {% endblock %}
