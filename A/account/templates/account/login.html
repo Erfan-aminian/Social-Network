@@ -1,10 +1,333 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h2>Login user</h2>
-  <form class="col-md-6" action="" method="post" novalidate>
-    {% csrf_token %}
-    {{form.as_p}}
-    <input type="submit" value="Login">
-  </form>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap');
+
+:root {
+    color-scheme: light;
+    --bg: #f6f5f1;
+    --surface: #ffffff;
+    --surface-2: rgba(255, 255, 255, 0.74);
+    --text: #0f172a;
+    --muted: #6b7280;
+    --primary: #0f766e;
+    --accent: #f59e0b;
+    --accent-2: #38bdf8;
+    --border: rgba(15, 23, 42, 0.08);
+    --ring: rgba(15, 118, 110, 0.32);
+    --shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0b1110;
+    --surface: #111827;
+    --surface-2: rgba(17, 24, 39, 0.7);
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --primary: #14b8a6;
+    --accent: #fbbf24;
+    --accent-2: #22d3ee;
+    --border: rgba(148, 163, 184, 0.18);
+    --ring: rgba(20, 184, 166, 0.45);
+    --shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+        color-scheme: dark;
+        --bg: #0b1110;
+        --surface: #111827;
+        --surface-2: rgba(17, 24, 39, 0.7);
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --primary: #14b8a6;
+        --accent: #fbbf24;
+        --accent-2: #22d3ee;
+        --border: rgba(148, 163, 184, 0.18);
+        --ring: rgba(20, 184, 166, 0.45);
+        --shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+    }
+}
+
+body {
+    margin: 0;
+    font-family: "Vazirmatn", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    width: 40vw;
+    height: 40vw;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.55;
+    z-index: -3;
+}
+
+body::before {
+    top: -15vw;
+    right: -8vw;
+    background: radial-gradient(circle, var(--accent), transparent 65%);
+}
+
+body::after {
+    bottom: -20vw;
+    left: -12vw;
+    background: radial-gradient(circle, var(--primary), transparent 65%);
+}
+
+.jumbotron {
+    background: transparent;
+    margin: 0;
+    padding: 0;
+}
+
+.bg-secondary {
+    background: transparent !important;
+}
+
+.navbar {
+    background: var(--surface-2) !important;
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 28px;
+}
+
+.auth-shell {
+    min-height: calc(100vh - 210px);
+    display: grid;
+    place-items: center;
+    padding: 48px 18px 28px;
+}
+
+.auth-panel {
+    width: min(940px, 100%);
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 30px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    padding: 26px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(14px);
+}
+
+.auth-cover {
+    border-radius: 22px;
+    padding: 28px;
+    background: linear-gradient(145deg, rgba(15, 118, 110, 0.95), rgba(56, 189, 248, 0.88));
+    color: #f8fafc;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-cover::before {
+    content: "";
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    top: -150px;
+    right: -120px;
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.7), transparent 70%);
+}
+
+.cover-chip {
+    display: inline-block;
+    padding: 6px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    font-size: 12px;
+    margin-bottom: 14px;
+}
+
+.cover-title {
+    margin: 0 0 12px;
+    font-size: clamp(1.6rem, 2.2vw, 2.3rem);
+    line-height: 1.25;
+}
+
+.cover-text {
+    margin: 0;
+    font-size: 0.98rem;
+    line-height: 1.9;
+    color: rgba(248, 250, 252, 0.9);
+}
+
+.auth-form-card {
+    border-radius: 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 26px 24px 22px;
+}
+
+.form-head {
+    margin-bottom: 18px;
+}
+
+.form-title {
+    margin: 0;
+    font-size: 1.55rem;
+}
+
+.form-subtitle {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.field {
+    margin-bottom: 14px;
+}
+
+.field label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.field input {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.75);
+    color: var(--text);
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+:root[data-theme="dark"] .field input {
+    background: rgba(15, 23, 42, 0.45);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) .field input {
+        background: rgba(15, 23, 42, 0.45);
+    }
+}
+
+.errorlist {
+    margin: 0 0 12px;
+    padding: 0;
+    list-style: none;
+    color: #ef4444;
+    font-size: 0.84rem;
+}
+
+.field input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px var(--ring);
+}
+
+.field .errorlist {
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+    color: #ef4444;
+    font-size: 0.82rem;
+}
+
+.btn-submit {
+    width: 100%;
+    border: 0;
+    border-radius: 999px;
+    padding: 11px 18px;
+    font-weight: 700;
+    background: linear-gradient(120deg, var(--primary), var(--accent));
+    color: #04231f;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: var(--shadow);
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+}
+
+.auth-links {
+    margin-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.auth-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.auth-links a:hover {
+    color: var(--primary);
+}
+
+@media (max-width: 900px) {
+    .auth-panel {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<section class="auth-shell">
+  <div class="auth-panel">
+    <aside class="auth-cover">
+      <span class="cover-chip">Social Network</span>
+      <h2 class="cover-title">به حساب خودت برگرد</h2>
+      <p class="cover-text">
+        برای دیدن فید، تعامل با پست‌ها و ادامه ارتباط با شبکه‌ات وارد شو.
+      </p>
+    </aside>
+
+    <div class="auth-form-card">
+      <div class="form-head">
+        <h1 class="form-title">ورود</h1>
+        <p class="form-subtitle">نام کاربری و رمز عبور خودت را وارد کن.</p>
+      </div>
+
+      <form action="" method="post" novalidate>
+        {% csrf_token %}
+        {% if request.GET.next %}
+          <input type="hidden" name="next" value="{{ request.GET.next }}">
+        {% endif %}
+
+        {% if form.non_field_errors %}
+          <ul class="errorlist">
+            {% for error in form.non_field_errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        <div class="field">
+          <label for="{{ form.username.id_for_label }}">نام کاربری</label>
+          {{ form.username }}
+          {{ form.username.errors }}
+        </div>
+
+        <div class="field">
+          <label for="{{ form.password.id_for_label }}">رمز عبور</label>
+          {{ form.password }}
+          {{ form.password.errors }}
+        </div>
+
+        <button class="btn-submit" type="submit">ورود به حساب</button>
+      </form>
+
+      <div class="auth-links">
+        <a href="{% url 'account:user_register' %}">حساب ندارم</a>
+        <a href="{% url 'account:reset_password' %}">فراموشی رمز عبور</a>
+      </div>
+    </div>
+  </div>
+</section>
 
 {% endblock %}
