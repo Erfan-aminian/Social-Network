@@ -1,21 +1,24 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
 
 :root {
     color-scheme: light;
     --bg: #f6f5f1;
     --surface: #ffffff;
-    --surface-2: rgba(255, 255, 255, 0.74);
+    --surface-2: rgba(255, 255, 255, 0.7);
     --text: #0f172a;
     --muted: #6b7280;
     --primary: #0f766e;
     --accent: #f59e0b;
     --accent-2: #38bdf8;
+    --accent-3: #fb7185;
     --border: rgba(15, 23, 42, 0.08);
     --ring: rgba(15, 118, 110, 0.32);
-    --shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
+    --shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+    --radius: 18px;
+    --radius-lg: 28px;
 }
 
 :root[data-theme="dark"] {
@@ -28,6 +31,7 @@
     --primary: #14b8a6;
     --accent: #fbbf24;
     --accent-2: #22d3ee;
+    --accent-3: #f472b6;
     --border: rgba(148, 163, 184, 0.18);
     --ring: rgba(20, 184, 166, 0.45);
     --shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
@@ -44,10 +48,21 @@
         --primary: #14b8a6;
         --accent: #fbbf24;
         --accent-2: #22d3ee;
+        --accent-3: #f472b6;
         --border: rgba(148, 163, 184, 0.18);
         --ring: rgba(20, 184, 166, 0.45);
         --shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
     }
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
@@ -55,14 +70,15 @@ body {
     font-family: "Vazirmatn", "Segoe UI", sans-serif;
     background: var(--bg);
     color: var(--text);
+    direction: rtl;
 }
 
 body::before,
 body::after {
     content: "";
     position: fixed;
-    width: 40vw;
-    height: 40vw;
+    width: 42vw;
+    height: 42vw;
     border-radius: 50%;
     filter: blur(70px);
     opacity: 0.55;
@@ -70,21 +86,26 @@ body::after {
 }
 
 body::before {
-    top: -15vw;
-    right: -8vw;
+    top: -16vw;
+    right: -12vw;
     background: radial-gradient(circle, var(--accent), transparent 65%);
 }
 
 body::after {
-    bottom: -20vw;
+    bottom: -22vw;
     left: -12vw;
     background: radial-gradient(circle, var(--primary), transparent 65%);
 }
 
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
 .jumbotron {
     background: transparent;
-    margin: 0;
     padding: 0;
+    margin: 0;
 }
 
 .bg-secondary {
@@ -96,94 +117,303 @@ body::after {
     backdrop-filter: blur(18px);
     border-bottom: 1px solid var(--border);
     padding: 12px 28px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .auth-shell {
-    min-height: calc(100vh - 210px);
-    display: grid;
-    place-items: center;
-    padding: 48px 18px 28px;
+    width: min(1180px, 92vw);
+    margin: 0 auto;
+    padding: 40px 0 28px;
 }
 
-.auth-panel {
-    width: min(940px, 100%);
+.login-hero {
     display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: 30px;
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+    align-items: stretch;
+    position: relative;
+}
+
+.hero-orbit {
+    position: relative;
+    min-height: 560px;
+}
+
+.hero-orbit-bg {
+    position: absolute;
+    inset: -30px -20px -30px -30px;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.orbit-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px dashed rgba(148, 163, 184, 0.2);
+    animation: spin 18s linear infinite;
+}
+
+.orbit-ring.r1 {
+    width: 350px;
+    height: 350px;
+    top: -30px;
+    right: 0;
+}
+
+.orbit-ring.r2 {
+    width: 510px;
+    height: 510px;
+    top: -110px;
+    right: -120px;
+    animation-duration: 28s;
+}
+
+.orbit-dot {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-2);
+    box-shadow: 0 0 0 6px rgba(56, 189, 248, 0.15);
+    animation: pulse 3s ease-in-out infinite;
+}
+
+.orbit-dot.d1 {
+    top: 50px;
+    right: 120px;
+}
+
+.orbit-dot.d2 {
+    top: 210px;
+    right: 10px;
+    background: var(--accent-3);
+}
+
+.orbit-dot.d3 {
+    top: 330px;
+    right: 170px;
+    background: var(--accent);
+}
+
+.left-stack {
+    position: absolute;
+    top: 14px;
+    left: 0;
+    width: 62%;
+    display: grid;
+    gap: 14px;
+}
+
+.left-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+    display: grid;
+    gap: 10px;
+    animation: float 7s ease-in-out infinite;
+}
+
+.left-card:nth-child(2) {
+    animation-delay: -2s;
+}
+
+.left-card:nth-child(3) {
+    animation-delay: -4s;
+}
+
+.left-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.left-pill {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.12);
+    color: var(--primary);
+    border: 1px solid var(--border);
+}
+
+.left-list {
+    display: grid;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.left-bar {
+    height: 8px;
+    background: var(--surface-2);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.left-bar span {
+    display: block;
+    height: 100%;
+    width: var(--level, 60%);
+    background: linear-gradient(90deg, var(--primary), var(--accent-2));
+}
+
+.left-meta {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.left-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.left-chip {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.1);
+    color: var(--primary);
+    border: 1px solid var(--border);
+}
+
+.glass-card {
+    position: absolute;
+    right: 14%;
+    width: 56%;
+    padding: 18px 20px;
+    border-radius: var(--radius-lg);
     background: var(--surface-2);
     border: 1px solid var(--border);
-    border-radius: 28px;
-    padding: 26px;
     box-shadow: var(--shadow);
-    backdrop-filter: blur(14px);
-}
-
-.auth-cover {
-    border-radius: 22px;
-    padding: 28px;
-    background: linear-gradient(145deg, rgba(15, 118, 110, 0.95), rgba(56, 189, 248, 0.88));
-    color: #f8fafc;
-    position: relative;
+    backdrop-filter: blur(20px);
+    display: grid;
+    gap: 10px;
     overflow: hidden;
 }
 
-.auth-cover::before {
+.glass-card::after {
     content: "";
     position: absolute;
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    top: -150px;
-    right: -120px;
-    background: radial-gradient(circle, rgba(251, 191, 36, 0.7), transparent 70%);
+    inset: -50% 50% auto auto;
+    width: 80px;
+    height: 200px;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    opacity: 0.4;
+    transform: rotate(25deg);
 }
 
-.cover-chip {
-    display: inline-block;
-    padding: 6px 14px;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: 999px;
-    font-size: 12px;
-    margin-bottom: 14px;
+.glass-card.c1 {
+    top: 40px;
 }
 
-.cover-title {
-    margin: 0 0 12px;
-    font-size: clamp(1.6rem, 2.2vw, 2.3rem);
-    line-height: 1.25;
+.glass-card.c2 {
+    top: 230px;
 }
 
-.cover-text {
-    margin: 0;
-    font-size: 0.98rem;
-    line-height: 1.9;
-    color: rgba(248, 250, 252, 0.9);
+.glass-card.c3 {
+    top: 420px;
+}
+
+.glass-title {
+    font-weight: 600;
+}
+
+.glass-list {
+    display: grid;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 0.9rem;
 }
 
 .auth-form-card {
-    border-radius: 22px;
-    background: var(--surface);
+    background: var(--surface-2);
     border: 1px solid var(--border);
-    padding: 26px 24px 22px;
+    border-radius: var(--radius-lg);
+    padding: 26px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(14px);
+    min-height: 560px;
+    display: grid;
+    align-content: start;
 }
 
 .form-head {
-    margin-bottom: 18px;
+    margin-bottom: 20px;
+    display: grid;
+    gap: 10px;
+}
+
+.hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chip {
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    letter-spacing: 0.3px;
 }
 
 .form-title {
     margin: 0;
-    font-size: 1.55rem;
+    font-size: clamp(2rem, 3.2vw, 3rem);
+    line-height: 1.1;
 }
 
 .form-subtitle {
-    margin: 8px 0 0;
+    margin: 0;
     color: var(--muted);
-    font-size: 0.95rem;
+    line-height: 1.9;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-toggle {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    padding: 10px 16px;
+}
+
+.theme-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-2);
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2);
 }
 
 .field {
-    margin-bottom: 14px;
+    margin-bottom: 15px;
 }
 
 .field label {
@@ -194,24 +424,29 @@ body::after {
     color: var(--muted);
 }
 
-.field input {
+.field input,
+.field .form-control {
     width: 100%;
-    border-radius: 12px;
+    border-radius: 14px;
     border: 1px solid var(--border);
-    background: rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.8);
     color: var(--text);
-    padding: 10px 12px;
+    padding: 11px 13px;
     outline: none;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-:root[data-theme="dark"] .field input {
+:root[data-theme="dark"] .field input,
+:root[data-theme="dark"] .field .form-control {
     background: rgba(15, 23, 42, 0.45);
+    color: var(--text);
 }
 
 @media (prefers-color-scheme: dark) {
-    :root:not([data-theme]) .field input {
+    :root:not([data-theme]) .field input,
+    :root:not([data-theme]) .field .form-control {
         background: rgba(15, 23, 42, 0.45);
+        color: var(--text);
     }
 }
 
@@ -223,8 +458,11 @@ body::after {
     font-size: 0.84rem;
 }
 
-.field input:focus {
+.field input:focus,
+.field .form-control:focus {
     border-color: var(--primary);
+    background: var(--surface);
+    color: var(--text);
     box-shadow: 0 0 0 4px var(--ring);
 }
 
@@ -238,22 +476,24 @@ body::after {
 
 .btn-submit {
     width: 100%;
-    border: 0;
+    border: 1px solid transparent;
     border-radius: 999px;
-    padding: 11px 18px;
+    padding: 12px 18px;
     font-weight: 700;
     background: linear-gradient(120deg, var(--primary), var(--accent));
-    color: #04231f;
+    color: #041016;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     box-shadow: var(--shadow);
+    margin-top: 8px;
 }
 
 .btn-submit:hover {
     transform: translateY(-2px);
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
 }
 
 .auth-links {
-    margin-top: 14px;
+    margin-top: 16px;
     display: flex;
     justify-content: space-between;
     gap: 10px;
@@ -270,64 +510,340 @@ body::after {
     color: var(--primary);
 }
 
-@media (max-width: 900px) {
-    .auth-panel {
+[data-anim="reveal"] {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+[data-anim="reveal"].is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.9;
+    }
+    50% {
+        transform: scale(1.25);
+        opacity: 0.5;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.floaty {
+    animation: float 6s ease-in-out infinite;
+}
+
+@media (max-width: 1040px) {
+    .login-hero {
         grid-template-columns: 1fr;
+    }
+
+    .hero-orbit {
+        min-height: 420px;
+    }
+
+    .auth-form-card {
+        min-height: auto;
+    }
+
+    .left-stack {
+        width: 100%;
+        position: static;
+        margin-top: 8px;
+    }
+
+    .glass-card {
+        width: 62%;
+        right: 30%;
+    }
+}
+
+@media (max-width: 720px) {
+    .hero-orbit {
+        min-height: auto;
+        display: grid;
+        gap: 12px;
+    }
+
+    .hero-orbit-bg {
+        display: none;
+    }
+
+    .glass-card,
+    .left-stack,
+    .left-card {
+        position: static;
+        width: 100%;
+        animation: none;
+    }
+
+    .auth-form-card {
+        padding: 22px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
     }
 }
 </style>
 
 <section class="auth-shell">
-  <div class="auth-panel">
-    <aside class="auth-cover">
-      <span class="cover-chip">Social Network</span>
-      <h2 class="cover-title">به حساب خودت برگرد</h2>
-      <p class="cover-text">
-        برای دیدن فید، تعامل با پست‌ها و ادامه ارتباط با شبکه‌ات وارد شو.
-      </p>
-    </aside>
+    <div class="login-hero" dir="rtl" lang="fa">
+        <aside class="hero-orbit" data-anim="reveal">
+            <div class="hero-orbit-bg" aria-hidden="true">
+                <div class="orbit-ring r1"></div>
+                <div class="orbit-ring r2"></div>
+                <span class="orbit-dot d1"></span>
+                <span class="orbit-dot d2"></span>
+                <span class="orbit-dot d3"></span>
+            </div>
+            <div class="left-stack">
+                <div class="left-card">
+                    <div class="left-title">
+                        <span>خوش برگشتی</span>
+                        <span class="left-pill">ONLINE</span>
+                    </div>
+                    <div class="left-list">
+                        <div>فید شخصی سازی شده</div>
+                        <div>چت های فعال</div>
+                        <div>اعلان های فوری</div>
+                    </div>
+                </div>
+                <div class="left-card">
+                    <div class="left-title">وضعیت شبکه</div>
+                    <div class="left-bar" style="--level: 84%;">
+                        <span></span>
+                    </div>
+                    <div class="left-meta">۸۴٪ کاربران امروز فعال بودند</div>
+                </div>
+                <div class="left-card">
+                    <div class="left-title">دسترسی سریع</div>
+                    <div class="left-actions">
+                        <span class="left-chip">فید</span>
+                        <span class="left-chip">چت</span>
+                        <span class="left-chip">پروفایل</span>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card c1 floaty" data-anim="reveal">
+                <div class="glass-title">چند ثانیه تا ورود</div>
+                <div class="glass-list">
+                    <div>نام کاربری و رمزت را وارد کن</div>
+                    <div>ادامه گفتگوها از همان جا</div>
+                    <div>مدیریت گروه ها و دوستان</div>
+                </div>
+            </div>
+            <div class="glass-card c2 floaty" data-anim="reveal">
+                <div class="glass-title">پیشنهاد امروز</div>
+                <div class="glass-list">
+                    <div>#برنامه_نویسی</div>
+                    <div>#طراحی</div>
+                    <div>#استارتاپ</div>
+                </div>
+            </div>
+            <div class="glass-card c3 floaty" data-anim="reveal">
+                <div class="glass-title">حساب نداری؟</div>
+                <div class="glass-list">
+                    <div>با یک ثبت نام سریع شروع کن</div>
+                    <div>پروفایل خودت را بساز</div>
+                    <div>به اجتماع خودت وصل شو</div>
+                </div>
+            </div>
+        </aside>
 
-    <div class="auth-form-card">
-      <div class="form-head">
-        <h1 class="form-title">ورود</h1>
-        <p class="form-subtitle">نام کاربری و رمز عبور خودت را وارد کن.</p>
-      </div>
+        <div class="auth-form-card" data-anim="reveal">
+            <div class="form-head">
+                <div class="hero-badges">
+                    <span class="chip">Social Network</span>
+                    <span class="chip">Login</span>
+                    <span class="chip">Secure Access</span>
+                </div>
+                <h1 class="form-title">ورود به حساب</h1>
+                <p class="form-subtitle">برای دسترسی به فید، پیام ها و ارتباطاتت وارد حساب کاربری شو.</p>
+                <div class="hero-actions">
+                    <button class="btn theme-toggle" type="button" data-theme-toggle aria-pressed="false">
+                        <span class="theme-dot"></span>
+                        <span data-theme-label>حالت روشن</span>
+                    </button>
+                </div>
+            </div>
 
-      <form action="" method="post" novalidate>
-        {% csrf_token %}
-        {% if request.GET.next %}
-          <input type="hidden" name="next" value="{{ request.GET.next }}">
-        {% endif %}
+            <form action="" method="post" novalidate>
+                {% csrf_token %}
+                {% if request.GET.next %}
+                    <input type="hidden" name="next" value="{{ request.GET.next }}">
+                {% endif %}
 
-        {% if form.non_field_errors %}
-          <ul class="errorlist">
-            {% for error in form.non_field_errors %}
-              <li>{{ error }}</li>
-            {% endfor %}
-          </ul>
-        {% endif %}
+                {% if form.non_field_errors %}
+                    <ul class="errorlist">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
 
-        <div class="field">
-          <label for="{{ form.username.id_for_label }}">نام کاربری</label>
-          {{ form.username }}
-          {{ form.username.errors }}
+                <div class="field">
+                    <label for="{{ form.username.id_for_label }}">نام کاربری</label>
+                    {{ form.username }}
+                    {{ form.username.errors }}
+                </div>
+
+                <div class="field">
+                    <label for="{{ form.password.id_for_label }}">رمز عبور</label>
+                    {{ form.password }}
+                    {{ form.password.errors }}
+                </div>
+
+                <button class="btn-submit" type="submit">ورود به حساب</button>
+            </form>
+
+            <div class="auth-links">
+                <a href="{% url 'account:user_register' %}">حساب ندارم</a>
+                <a href="{% url 'account:reset_password' %}">فراموشی رمز عبور</a>
+            </div>
         </div>
-
-        <div class="field">
-          <label for="{{ form.password.id_for_label }}">رمز عبور</label>
-          {{ form.password }}
-          {{ form.password.errors }}
-        </div>
-
-        <button class="btn-submit" type="submit">ورود به حساب</button>
-      </form>
-
-      <div class="auth-links">
-        <a href="{% url 'account:user_register' %}">حساب ندارم</a>
-        <a href="{% url 'account:reset_password' %}">فراموشی رمز عبور</a>
-      </div>
     </div>
-  </div>
 </section>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+(() => {
+    "use strict";
+
+    const root = document.documentElement;
+    const storageKey = "sn-theme";
+    const toggle = document.querySelector("[data-theme-toggle]");
+    const label = document.querySelector("[data-theme-label]");
+    const systemMedia = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const resolvedTheme = () => {
+        const explicit = root.getAttribute("data-theme");
+        if (explicit) {
+            return explicit;
+        }
+        return systemMedia.matches ? "dark" : "light";
+    };
+
+    const applyTheme = (theme) => {
+        if (theme === "light" || theme === "dark") {
+            root.setAttribute("data-theme", theme);
+        } else {
+            root.removeAttribute("data-theme");
+        }
+        const resolved = resolvedTheme();
+        if (label) {
+            label.textContent = resolved === "dark" ? "حالت تیره" : "حالت روشن";
+        }
+        if (toggle) {
+            toggle.setAttribute("aria-pressed", resolved === "dark");
+        }
+    };
+
+    const stored = localStorage.getItem(storageKey);
+    applyTheme(stored || "system");
+
+    if (toggle) {
+        toggle.addEventListener("click", () => {
+            const next = resolvedTheme() === "dark" ? "light" : "dark";
+            localStorage.setItem(storageKey, next);
+            applyTheme(next);
+        });
+    }
+
+    if (systemMedia.addEventListener) {
+        systemMedia.addEventListener("change", () => {
+            if (!localStorage.getItem(storageKey)) {
+                applyTheme("system");
+            }
+        });
+    }
+
+    const revealEls = document.querySelectorAll("[data-anim='reveal']");
+    if ("IntersectionObserver" in window) {
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("is-visible");
+                    io.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.18 });
+
+        revealEls.forEach((el, index) => {
+            el.style.transitionDelay = `${Math.min(index * 0.08, 0.4)}s`;
+            io.observe(el);
+        });
+    } else {
+        revealEls.forEach((el) => el.classList.add("is-visible"));
+    }
+
+    window.addEventListener("load", () => {
+        if (window.gsap) {
+            gsap.from(".form-head > *", {
+                opacity: 0,
+                y: 22,
+                duration: 0.8,
+                stagger: 0.08,
+                ease: "power2.out"
+            });
+            gsap.from(".field, .btn-submit, .auth-links", {
+                opacity: 0,
+                y: 16,
+                duration: 0.75,
+                stagger: 0.09,
+                delay: 0.15,
+                ease: "power2.out"
+            });
+            gsap.from(".hero-orbit .left-card", {
+                opacity: 0,
+                x: -18,
+                duration: 0.8,
+                stagger: 0.1,
+                ease: "power2.out"
+            });
+            gsap.from(".glass-card", {
+                opacity: 0,
+                y: 16,
+                duration: 0.9,
+                stagger: 0.12,
+                ease: "power2.out"
+            });
+            gsap.from(".orbit-ring", {
+                opacity: 0,
+                scale: 0.92,
+                duration: 1.1,
+                ease: "power2.out"
+            });
+        }
+    });
+})();
+</script>
 
 {% endblock %}
