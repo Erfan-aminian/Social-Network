@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 from .models import Relation
+from .captcha import LOGIN_CAPTCHA_SESSION_KEY, build_login_captcha, get_question_text
 # Create your views here.
 
 class UserRegisterView(View):
@@ -35,6 +36,25 @@ class UserRegisterView(View):
 class UserLoginViews(View):
 	form_class = UserLoginForm
 	template_name = 'account/login.html'
+
+	def _create_captcha(self, request):
+		captcha_payload = build_login_captcha()
+		request.session[LOGIN_CAPTCHA_SESSION_KEY] = captcha_payload
+		return captcha_payload
+
+	def _get_captcha(self, request):
+		captcha_payload = request.session.get(LOGIN_CAPTCHA_SESSION_KEY)
+		if captcha_payload:
+			return captcha_payload
+		return self._create_captcha(request)
+
+	def _captcha_context(self, captcha_payload):
+		return {
+			'captcha_question': get_question_text(captcha_payload['question_type']),
+			'captcha_numbers': captcha_payload['display_items'],
+			'captcha_token': captcha_payload['token'],
+		}
+
 	def setup(self, request, *args, **kwargs):
 		self.next = request.GET.get('next')
 		return super().setup(request, *args, **kwargs)
@@ -44,22 +64,28 @@ class UserLoginViews(View):
 		return super().dispatch(request, *args, **kwargs)
 
 	def get(self, request):
-		form = self.form_class
-		return render(request, self.template_name, {'form':form})
+		captcha_payload = self._create_captcha(request)
+		form = self.form_class()
+		context = {'form': form, **self._captcha_context(captcha_payload)}
+		return render(request, self.template_name, context)
 
 	def post(self, request):
-		form = self.form_class(request.POST)
+		captcha_payload = self._get_captcha(request)
+		form = self.form_class(request.POST, captcha_payload=captcha_payload)
 		if form.is_valid():
 			cd = form.cleaned_data
 			user = authenticate(request, username = cd['username'], password = cd['password'])
 			if user is not None:
+				request.session.pop(LOGIN_CAPTCHA_SESSION_KEY, None)
 				login(request, user)
 				messages.success(request, 'you logged in successfully', 'success')
 				if self.next:
 					return redirect(self.next)
 				return redirect('home:home')
-			messages.error(request, 'username or password is wrong', 'warning')
-		return render(request, self.template_name, {'form':form})
+			form.add_error(None, 'نام کاربری یا رمز عبور اشتباه است.')
+		captcha_payload = self._create_captcha(request)
+		context = {'form': form, **self._captcha_context(captcha_payload)}
+		return render(request, self.template_name, context)
 
 
 

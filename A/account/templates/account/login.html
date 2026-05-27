@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block content %}
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
@@ -125,20 +125,20 @@ a {
 .auth-shell {
     width: min(1180px, 92vw);
     margin: 0 auto;
-    padding: 40px 0 28px;
+    padding: 28px 0 20px;
 }
 
 .login-hero {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 36px;
+    gap: 28px;
     align-items: stretch;
     position: relative;
 }
 
 .hero-orbit {
     position: relative;
-    min-height: 560px;
+    min-height: 500px;
 }
 
 .hero-orbit-bg {
@@ -337,18 +337,18 @@ a {
     background: var(--surface-2);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 26px;
+    padding: 22px;
     box-shadow: var(--shadow);
     backdrop-filter: blur(14px);
-    min-height: 560px;
+    min-height: 500px;
     display: grid;
     align-content: start;
 }
 
 .form-head {
-    margin-bottom: 20px;
+    margin-bottom: 14px;
     display: grid;
-    gap: 10px;
+    gap: 8px;
 }
 
 .hero-badges {
@@ -368,7 +368,7 @@ a {
 
 .form-title {
     margin: 0;
-    font-size: clamp(2rem, 3.2vw, 3rem);
+    font-size: clamp(1.7rem, 2.4vw, 2.5rem);
     line-height: 1.1;
 }
 
@@ -413,7 +413,7 @@ a {
 }
 
 .field {
-    margin-bottom: 15px;
+    margin-bottom: 12px;
 }
 
 .field label {
@@ -474,17 +474,98 @@ a {
     font-size: 0.82rem;
 }
 
+.captcha-box {
+    margin: 6px 0 8px;
+    padding: 12px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: linear-gradient(160deg, var(--surface), rgba(56, 189, 248, 0.08));
+    box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.12);
+}
+
+.captcha-head {
+    font-weight: 700;
+    margin-bottom: 7px;
+}
+
+.captcha-question {
+    margin: 0 0 6px;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.captcha-note {
+    margin: 0 0 8px;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.captcha-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.captcha-number {
+    min-width: 0;
+    height: 38px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Fira Code", monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    border: 1px solid var(--border);
+}
+
+.captcha-number.primary {
+    color: #041016;
+    background: linear-gradient(125deg, var(--accent), var(--accent-2));
+    box-shadow: 0 8px 24px rgba(56, 189, 248, 0.33);
+    transform: translateY(-1px);
+}
+
+.captcha-number.decoy {
+    color: #9ca3af;
+    background: #1f2937;
+    border-color: rgba(148, 163, 184, 0.25);
+    opacity: 0.7;
+}
+
+:root[data-theme="dark"] .captcha-number.decoy {
+    color: #6b7280;
+    background: #111827;
+}
+
+@media (max-width: 520px) {
+    .captcha-strip {
+        gap: 6px;
+    }
+
+    .captcha-number {
+        height: 38px;
+        font-size: 0.92rem;
+    }
+}
+
+.captcha-field {
+    margin-bottom: 0;
+}
+
 .btn-submit {
     width: 100%;
     border: 1px solid transparent;
     border-radius: 999px;
-    padding: 12px 18px;
+    padding: 10px 16px;
     font-weight: 700;
     background: linear-gradient(120deg, var(--primary), var(--accent));
     color: #041016;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     box-shadow: var(--shadow);
-    margin-top: 8px;
+    margin-top: 6px;
+    margin-bottom: 10px;
 }
 
 .btn-submit:hover {
@@ -493,11 +574,49 @@ a {
 }
 
 .auth-links {
-    margin-top: 16px;
+    margin-top: 0;
+    padding-top: 6px;
     display: flex;
     justify-content: space-between;
     gap: 10px;
     flex-wrap: wrap;
+}
+
+.auth-form-card form {
+    display: grid;
+    gap: 10px;
+}
+
+@media (max-height: 820px) and (min-width: 1041px) {
+    .auth-shell {
+        padding: 16px 0 10px;
+    }
+
+    .hero-orbit,
+    .auth-form-card {
+        min-height: 455px;
+    }
+
+    .left-card {
+        padding: 12px 14px;
+        gap: 8px;
+    }
+
+    .glass-card {
+        padding: 14px 16px;
+    }
+
+    .glass-card.c1 {
+        top: 20px;
+    }
+
+    .glass-card.c2 {
+        top: 190px;
+    }
+
+    .glass-card.c3 {
+        top: 350px;
+    }
 }
 
 .auth-links a {
@@ -721,6 +840,23 @@ a {
                     {{ form.password.errors }}
                 </div>
 
+                <div class="captcha-box" data-anim="reveal">
+                    <div class="captcha-head">تایید انسان بودن</div>
+                    <p class="captcha-question">{{ captcha_question }}</p>
+                    <p class="captcha-note">فقط دو عدد رنگی مهم هستند. عددهای تیره را نادیده بگیر.</p>
+                    <div class="captcha-strip" aria-hidden="true">
+                        {% for item in captcha_numbers %}
+                            <span class="captcha-number {% if item.is_primary %}primary{% else %}decoy{% endif %}">{{ item.value }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="field captcha-field">
+                        <label for="{{ form.captcha_answer.id_for_label }}">پاسخ سوال</label>
+                        {{ form.captcha_answer }}
+                        {{ form.captcha_answer.errors }}
+                    </div>
+                </div>
+                <input type="hidden" name="captcha_token" value="{{ captcha_token }}">
+
                 <button class="btn-submit" type="submit">ورود به حساب</button>
             </form>
 
@@ -847,3 +983,5 @@ a {
 </script>
 
 {% endblock %}
+
+
